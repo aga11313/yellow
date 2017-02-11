@@ -1,0 +1,12 @@
+{
+  "name": "yellowglove",
+  "version": "0.0.0",
+  "bin": "./source",
+  "private": true,
+  "description": "The microbit component of the yellow power glove",
+  "author": "Cameron MacLeod",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "microbit": "^2.0.0-rc7"
+  }
+}
