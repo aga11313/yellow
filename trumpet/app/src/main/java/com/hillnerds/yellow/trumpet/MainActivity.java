@@ -26,6 +26,16 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
     int previousNote;
 
+    private static Instrument[] instrumentList = new Instrument[] {
+            new Instrument("piano", 1, 40, 60),
+            new Instrument("guitar", 26, 45, 70),
+            new Instrument("trombone", 58, 55, 70),
+            new Instrument("trumpet", 57, 64, 80),
+            new Instrument("violin", 41, 50, 65),
+            new Instrument("saxophone", 66, 45, 60),
+            new Instrument("flute", 74, 60, 75)
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,8 +43,13 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
         midi = new MidiDriver();
         buttonList = new boolean[] {false, false, false};
-        Instrument trumpet = new Instrument("trumpet", 57, 64, 40);
-        sendMidi(192, 56);
+        Instrument trumpet = instrumentList[3];
+
+        StartingSequence addStart = new StartingSequence(192, trumpet, 0);
+
+        MidiParser mp = new MidiParser(addStart);
+        playThread = new Thread(mp);
+        playThread.start();
 
         previousNote = 60;
 
@@ -95,42 +110,46 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
         Log.i("updateButtonList", MessageFormat.format("Array: {0}, {1}, {2}", buttonList[0], buttonList[1], buttonList[2]));
 
-        if (buttonList[0] == false && buttonList[1] == false && buttonList[2] == false ){
-            sendMidi(0x90, 60, 80);
-            sendMidi(0x90, previousNote, 0);
+        if (buttonList[0] == true && buttonList[1] == true && buttonList[2] == true ){
+            sendMidi(144, 60, 60);
+            sendMidi(144, previousNote, 0);
             previousNote = 60;
         }
         else if (buttonList[0] == true && buttonList[1] == false && buttonList[2] == true){
-            sendMidi(0x90, 62, 80);
-            sendMidi(0x90, previousNote, 0);
+            sendMidi(144, 62, 60);
+            sendMidi(144, previousNote, 0);
             previousNote = 62;
         }
         else if (buttonList[0] == true  && buttonList[1] == true && buttonList[2] == false){
-            sendMidi(0x90, 64, 80);
-            sendMidi(0x90, previousNote, 0);
+            sendMidi(144, 64, 60);
+            sendMidi(144, previousNote, 0);
             previousNote = 64;
         }
         else if (buttonList[0] == true && buttonList[1] == false && buttonList[2] == false){
-            sendMidi(0x90, 66, 80);
-            sendMidi(0x90, previousNote, 0);
+            //Note note = new Note(144, 66, 60, 0);
+            //MidiParser mp = new MidiParser(note);
+            //playThread   = new Thread(mp);
+            //playThread.start();
+            sendMidi(144, 66, 60);
+            sendMidi(144, previousNote, 0);
             previousNote = 66;
         }
         else if (buttonList[0] == false && buttonList[1] == false && buttonList[2] == true){
-            sendMidi(0x90, 68, 80);
-            sendMidi(0x90, previousNote, 0);
+            sendMidi(144, 68, 60);
+            sendMidi(144, previousNote, 0);
             previousNote = 68;
         }
         else if (buttonList[0] == false && buttonList[1] == true && buttonList[2] == false){
-            sendMidi(0x90, 70, 80);
-            sendMidi(0x90, previousNote, 0);
+            sendMidi(144, 70, 60);
+            sendMidi(144, previousNote, 0);
             previousNote = 70;
         }
         else if (buttonList[0] == false && buttonList[1] == true && buttonList[2] == true){
-            sendMidi(0x90, 72, 80);
-            sendMidi(0x90, previousNote, 0);
+            sendMidi(144, 72, 60);
+            sendMidi(144, previousNote, 0);
             previousNote = 72;
         } else {
-            sendMidi(0x90, previousNote, 0);
+            sendMidi(144, previousNote, 0);
             previousNote = 60;
         }
     }
@@ -141,7 +160,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
         msg[0] = (byte) m;
         msg[1] = (byte) p;
         Log.i("sendMidi", MessageFormat.format("{0}, {1}", m, p));
-
         //Writes the two byte array to the MIDI stream.
         midi.write(msg);
     }
@@ -155,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
     protected void sendMidi(int m, int n, int v) {
         byte msg[] = new byte[3];
 
+        Log.i("sendMidi", MessageFormat.format("{0}, {1}, {2}", m, n, v));
         msg[0] = (byte) m;
         msg[1] = (byte) n;
         msg[2] = (byte) v;
@@ -183,26 +202,21 @@ public class MainActivity extends AppCompatActivity implements Observer {
         updateButtonList(((Intent) arg).getAction());
     }
 
-    /*public class MidiParser implements Runnable {
-        private ArrayList<MidiSequence> midiSequenceFile;
+    public class MidiParser implements Runnable {
+        private MidiSequence midiSequence;
 
-        public MidiParser(ArrayList<MidiSequence> midiSequenceFile) {
-            this.midiSequenceFile = midiSequenceFile;
+        public MidiParser(MidiSequence midiSequence) {
+            this.midiSequence = midiSequence;
         }
 
-        public void run() {
-            int currentTimestamp = 0;
-            while (!midiSynthesizingStop) {
-                for (MidiSequence m : midiSequenceFile) {
-                    if (m instanceof StartingSequence) {
-                        sendMidi(m.startingCode, ((StartingSequence) m).instrument.instrumentMidiCode);
-                    } else if (m instanceof Note) {
-                        safeSleep(m.timestamp - currentTimestamp);
-                        sendMidi(m.startingCode, ((Note) m).pitch, ((Note) m).velocity);
-                    }
-                    currentTimestamp = m.timestamp;
+        public void run() {{
+                if (midiSequence instanceof StartingSequence) {
+                    sendMidi(midiSequence.startingCode, ((StartingSequence) midiSequence).instrument.instrumentMidiCode);
+                } else {
+                    sendMidi(midiSequence.startingCode, ((Note) midiSequence).pitch, ((Note) midiSequence).velocity);
+
                 }
             }
         }
-    }*/
+    }
 }

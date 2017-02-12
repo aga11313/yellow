@@ -29,7 +29,7 @@ public class MicrobitCommsService extends Service {
                     }
                     Broadcasts.sendFinger(MicrobitCommsService.this, 0, false);
                     try {
-                        sleep(1000);
+                        sleep(50);
                     } catch (Exception e) {
                         Log.i("testBroadcasts", e.toString());
                     }
@@ -41,7 +41,7 @@ public class MicrobitCommsService extends Service {
                     }
                     Broadcasts.sendFinger(MicrobitCommsService.this, 1, false);
                     try {
-                        sleep(1000);
+                        sleep(50);
                     } catch (Exception e) {
                         Log.i("testBroadcasts", e.toString());
                     }
