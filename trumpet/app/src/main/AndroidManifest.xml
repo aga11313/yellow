@@ -2,18 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.hillnerds.yellow.trumpet">
 
-    <receiver android:name=".FingerReciever" android:exported="true">
-        <intent-filter>
-            <action android:name="com.hillnerds.yellow.FINGER1_DOWN"/>
-            <action android:name="com.hillnerds.yellow.FINGER1_UP"/>
-            <action android:name="com.hillnerds.yellow.FINGER2_DOWN"/>
-            <action android:name="com.hillnerds.yellow.FINGER2_UP"/>
-            <action android:name="com.hillnerds.yellow.FINGER3_DOWN"/>
-            <action android:name="com.hillnerds.yellow.FINGER3_UP"/>
-        </intent-filter>
-    </receiver>
 
     <application
+
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -26,6 +17,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".FingerReciever" android:exported="true">
+            <intent-filter>
+                <action android:name="com.hillnerds.yellow.FINGER0_DOWN"/>
+                <action android:name="com.hillnerds.yellow.FINGER0_UP"/>
+                <action android:name="com.hillnerds.yellow.FINGER1_DOWN"/>
+                <action android:name="com.hillnerds.yellow.FINGER1_UP"/>
+                <action android:name="com.hillnerds.yellow.FINGER2_DOWN"/>
+                <action android:name="com.hillnerds.yellow.FINGER2_UP"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

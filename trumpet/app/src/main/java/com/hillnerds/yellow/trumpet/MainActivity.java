@@ -1,25 +1,26 @@
 package com.hillnerds.yellow.trumpet;
 
 import android.content.Intent;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import org.billthefarmer.mididriver.MidiDriver;
 
 import java.nio.channels.Channel;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Observer {
 
     protected MidiDriver midi;
-
-    int channelCounter = 0;
 
     private Thread playThread;
 
     public boolean[] buttonList;
-
-    public ArrayList<MidiSequence> activeBu = new ArrayList<>();
 
     private boolean midiSynthesizingStop = false;
 
@@ -30,13 +31,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        buttonList = new boolean[] {false, false, false};
-
-        Instrument trumpet = new Instrument("trumpet", 57, 64, 80);
-
         midi = new MidiDriver();
+        buttonList = new boolean[] {false, false, false};
+        Instrument trumpet = new Instrument("trumpet", 57, 64, 40);
+        sendMidi(192, 56);
 
         previousNote = 60;
+
+        ObservableObject.getInstance().addObserver(this);
+
     }
 
     @Override
@@ -65,53 +68,70 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void updateButtonList(Intent intent){
-
-        /*switch (intent.getAction()){
-            case (com.hillnerds.yellow.BUTTON0_DOWN):
+    public void updateButtonList(String broadcast){
+        Log.i("updateButtonList", MessageFormat.format("{0}", broadcast));
+        switch (broadcast){
+            case ("com.hillnerds.yellow.FINGER0_DOWN"):
                 buttonList[0] = true;
-            case (com.hillnerds.yellow.BUTTON0_UP):
+                break;
+            case ("com.hillnerds.yellow.FINGER0_UP"):
                 buttonList[0] = false;
-            case (com.hillnerds.yellow.BUTTON0_DOWN):
+                break;
+            case ("com.hillnerds.yellow.FINGER1_DOWN"):
                 buttonList[1] = true;
-            case (com.hillnerds.yellow.BUTTON0_UP):
+                break;
+            case ("com.hillnerds.yellow.FINGER1_UP"):
                 buttonList[1] = false;
-            case (com.hillnerds.yellow.BUTTON0_DOWN):
+                break;
+            case ("com.hillnerds.yellow.FINGER2_DOWN"):
                 buttonList[2] = true;
-            case (com.hillnerds.yellow.BUTTON0_UP):
+                break;
+            case ("com.hillnerds.yellow.FINGER2_UP"):
                 buttonList[2] = false;
-        }*/
+                break;
+            default:
+                break;
+        }
+
+        Log.i("updateButtonList", MessageFormat.format("Array: {0}, {1}, {2}", buttonList[0], buttonList[1], buttonList[2]));
 
         if (buttonList[0] == false && buttonList[1] == false && buttonList[2] == false ){
             sendMidi(0x90, 60, 80);
             sendMidi(0x90, previousNote, 0);
+            previousNote = 60;
         }
         else if (buttonList[0] == true && buttonList[1] == false && buttonList[2] == true){
             sendMidi(0x90, 62, 80);
             sendMidi(0x90, previousNote, 0);
+            previousNote = 62;
         }
         else if (buttonList[0] == true  && buttonList[1] == true && buttonList[2] == false){
             sendMidi(0x90, 64, 80);
             sendMidi(0x90, previousNote, 0);
+            previousNote = 64;
         }
         else if (buttonList[0] == true && buttonList[1] == false && buttonList[2] == false){
             sendMidi(0x90, 66, 80);
             sendMidi(0x90, previousNote, 0);
+            previousNote = 66;
         }
         else if (buttonList[0] == false && buttonList[1] == false && buttonList[2] == true){
             sendMidi(0x90, 68, 80);
             sendMidi(0x90, previousNote, 0);
+            previousNote = 68;
         }
         else if (buttonList[0] == false && buttonList[1] == true && buttonList[2] == false){
             sendMidi(0x90, 70, 80);
             sendMidi(0x90, previousNote, 0);
+            previousNote = 70;
         }
         else if (buttonList[0] == false && buttonList[1] == true && buttonList[2] == true){
             sendMidi(0x90, 72, 80);
             sendMidi(0x90, previousNote, 0);
+            previousNote = 72;
         } else {
-            sendMidi(0x90, 74, 80);
             sendMidi(0x90, previousNote, 0);
+            previousNote = 60;
         }
     }
 
@@ -120,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
         msg[0] = (byte) m;
         msg[1] = (byte) p;
+        Log.i("sendMidi", MessageFormat.format("{0}, {1}", m, p));
 
         //Writes the two byte array to the MIDI stream.
         midi.write(msg);
@@ -157,7 +178,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public class MidiParser implements Runnable {
+    @Override
+    public void update(Observable o, Object arg) {
+        updateButtonList(((Intent) arg).getAction());
+    }
+
+    /*public class MidiParser implements Runnable {
         private ArrayList<MidiSequence> midiSequenceFile;
 
         public MidiParser(ArrayList<MidiSequence> midiSequenceFile) {
@@ -178,5 +204,5 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-    }
+    }*/
 }

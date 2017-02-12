@@ -16,10 +16,14 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.IBinder;
+import android.renderscript.ScriptGroup;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -35,6 +39,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import static java.lang.Thread.sleep;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,6 +59,19 @@ public class MainActivity extends AppCompatActivity {
     };
     final static int PERMISSIONS_REQUEST_CODE = 1;
 
+    private MicrobitCommsService mBoundService;
+    private boolean serviceBound = false;
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mBoundService = ((MicrobitCommsService.LocalBinder)service).getService();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            mBoundService = null;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +88,9 @@ public class MainActivity extends AppCompatActivity {
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
+
+        doBindService();
+        Log.i("onCreate","service Bind.");
 
     }
 
@@ -118,6 +140,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    void doBindService() {
+        startService(new Intent(this,
+                MicrobitCommsService.class));
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -268,5 +295,8 @@ public class MainActivity extends AppCompatActivity {
             }
             return;
         }
+    }
+
+    public void testBroadcasts (){
     }
 }
