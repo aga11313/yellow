@@ -20,8 +20,12 @@
             android:name=".ScrollReciever"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.hillnerds.yellow.SCROLL_DOWN" />
-                <action android:name="com.hillnerds.yellow.SCROLL_UP" />
+                <action android:name="com.hillnerds.yellow.FINGER0_DOWN"/>
+                <action android:name="com.hillnerds.yellow.FINGER0_UP"/>
+                <action android:name="com.hillnerds.yellow.FINGER1_DOWN"/>
+                <action android:name="com.hillnerds.yellow.FINGER1_UP"/>
+                <action android:name="com.hillnerds.yellow.FINGER2_DOWN"/>
+                <action android:name="com.hillnerds.yellow.FINGER2_UP"/>
             </intent-filter>
         </receiver>
 
