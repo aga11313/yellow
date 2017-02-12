@@ -31,7 +31,11 @@ public class Broadcasts {
                 intent.setAction("com.hillnerds.yellow.FINGER1_" + direction);
                 break;
             case (2):
+                Log.i("sendFInger", MessageFormat.format("The finger 2 {0} message has been broadcasted", direction));
                 intent.setAction("com.hillnerds.yellow.FINGER2_" + direction);
+                break;
+            default:
+                break;
         }
 
         ctx.sendBroadcast(intent);
