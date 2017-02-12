@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -13,9 +14,8 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
-import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Handler;
-import android.os.ParcelUuid;
 import android.util.Log;
 
 import java.text.MessageFormat;
@@ -34,8 +34,14 @@ class BluetoothHelper {
     private Handler mHandler;
 
     private static final int SCAN_PERIOD = 5000;
-    private static final String pinIOGATTUUID =
+    private static final String pinIOGATT =
             "E95D127B-251D-470A-A062-FA1922DFA9A8";
+    private static final UUID pinIOGATTUUID =
+            UUID.fromString(pinIOGATT);
+    private static final String pinDataCharacteristic =
+            "E95D8D00-251D-470A-A062-FA1922DFA9A8";
+    private static final UUID pinDataCharacteristicUUID =
+            UUID.fromString(pinDataCharacteristic);
     private boolean deviceFound = false;
 
     private List<ScanFilter> microBitFilter;
@@ -67,7 +73,7 @@ class BluetoothHelper {
 
     private List<ScanFilter> buildScanFilter() {
         ScanFilter.Builder build = new ScanFilter.Builder();
-        //build.setServiceUuid(ParcelUuid.fromString(pinIOGATTUUID));
+        //build.setServiceUuid(ParcelUuid.fromString(pinIOGATT));
         build.setDeviceName("BBC micro:bit [tateg]");
         ArrayList<ScanFilter> lFilt = new ArrayList<>();
         lFilt.add(build.build());
@@ -96,10 +102,18 @@ class BluetoothHelper {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.i(TAG, "Discovered services successfully");
-                if (gatt.getService(UUID.fromString(pinIOGATTUUID)) == null) {
+                if (gatt.getService(pinIOGATTUUID) == null) {
                     Log.w(TAG, "Device doesn't support pin IO");
                 }
-                gatt.connect();
+                BluetoothGattCharacteristic pinData = gatt.
+                        getService(pinIOGATTUUID).getCharacteristic(pinDataCharacteristicUUID);
+                gatt.setCharacteristicNotification(pinData, true);
+                BluetoothGattDescriptor descriptor = pinData.getDescriptors().get(0);
+                Log.i(TAG, "# descriptors " + pinData.getDescriptors().size());
+                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                if (gatt.writeDescriptor(descriptor)) {
+                    Log.d(TAG, "writeDescriptor returned true");
+                }
             } else {
                 Log.w(TAG, "Didn't discover services w/ code " + status);
             }
@@ -109,6 +123,12 @@ class BluetoothHelper {
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
             Log.i(TAG, "Read characteristic");
+        }
+
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt,
+                                            BluetoothGattCharacteristic characteristic) {
+            Log.i(TAG, "Characteristic changed");
         }
     };
 
@@ -130,7 +150,7 @@ class BluetoothHelper {
         }
     };
 
-    public void scanLeDevice(final boolean enable) {
+    void scanLeDevice(final boolean enable) {
         Log.d(TAG, MessageFormat.format("Entered scanLeDevice {0}", count));
         count++;
         if (enable) {
