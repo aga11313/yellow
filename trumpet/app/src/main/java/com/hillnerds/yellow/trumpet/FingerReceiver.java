@@ -10,17 +10,19 @@ import android.widget.Toast;
  * Created by aga on 11/02/17.
  */
 
-public class FingerReciever extends BroadcastReceiver {
+public class FingerReceiver extends BroadcastReceiver {
     private static final String TAG = "MyBroadcastReceiver";
     @Override
+    /**
+     * Method called when a receiver .FingerReceiver is activated (specified in the manifest)
+     * Called every time a FINGER_DOWN or FINGER_UP action is received
+     */
     public void onReceive(Context context, Intent intent) {
-        Log.i("onRecieve", "in onRecive");
-        StringBuilder sb = new StringBuilder();
-        sb.append("Action: " + intent.getAction() + "\n");
-        sb.append("URI: " + intent.toUri(Intent.URI_INTENT_SCHEME).toString() + "\n");
-        String log = sb.toString();
-        Log.d(TAG, log);
-        //Toast.makeText(context, log, Toast.LENGTH_LONG).show();
+
+        /*
+         * Create an Observable Object with the intent as a value. The intent
+         * contains the action name of the received event
+         */
         ObservableObject.getInstance().updateValue(intent);
     }
 }
