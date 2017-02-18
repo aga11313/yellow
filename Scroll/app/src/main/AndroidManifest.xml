@@ -16,8 +16,8 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".ScrollReciever"
+        <!-- The receiver listening for button press actions -->
+        <receiver android:name=".ScrollReciever"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.hillnerds.yellow.FINGER0_DOWN"/>

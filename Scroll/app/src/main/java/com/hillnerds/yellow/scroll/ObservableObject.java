@@ -13,12 +13,13 @@ public class ObservableObject extends Observable {
         return instance;
     }
 
-    private ObservableObject() {
-    }
-
     public void updateValue(Object data) {
         synchronized (this) {
+            //marks this observable as changed
             setChanged();
+            /*When the observable is changed all its observers are notified and the update
+             *method is called for all observers of this observable.
+             */
             notifyObservers(data);
         }
     }
