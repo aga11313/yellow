@@ -18,15 +18,20 @@ public class MainActivity extends AppCompatActivity implements Observer {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Add an Observer to the ObservableObject in this class
         ObservableObject.getInstance().addObserver(this);
 
+        // Set the text from strings.xml
         TextView text = (TextView)findViewById(R.id.text);
         text.setText(R.string.much_text);
 
         sv = (ScrollView)findViewById(R.id.scroll);
-        scrollDown();
     }
 
+    /**
+     * Scrolls all the way to the top of ScrollView
+     */
     public void scrollUp(){
         sv.post(new Runnable() {
             public void run() {
@@ -35,6 +40,9 @@ public class MainActivity extends AppCompatActivity implements Observer {
         });
     }
 
+    /**
+     * Scrolls all the way to the bottom of a ScrollView
+     */
     public void scrollDown(){
         sv.post(new Runnable() {
             public void run() {
@@ -43,9 +51,13 @@ public class MainActivity extends AppCompatActivity implements Observer {
         });
     }
 
+    /**
+     * Method called form the update method. Decides which scroll action should be taken
+     * based on the broadcast message.
+     * @param broadcast - the String broadcast code
+     */
     public void scroll (String broadcast){
-
-        Log.i("updateButtonList", MessageFormat.format("{0}", broadcast));
+        //a switch statement controlling which scroll action should be called on which button press
         switch (broadcast){
             case ("com.hillnerds.yellow.FINGER0_DOWN"):
                 scrollUp();
@@ -67,6 +79,11 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
     }
 
+    /**
+     * Method called when the ObservableObject is changed (this class is its Observer)
+     * @param o - the ObservableObject
+     * @param arg - the data changed in the ObservableObject
+     */
     @Override
     public void update(Observable o, Object arg) {
         scroll(((Intent) arg).getAction());

@@ -17,24 +17,11 @@ import java.util.Observer;
 public class MainActivity extends AppCompatActivity implements Observer {
 
     protected MidiDriver midi;
-
     private Thread playThread;
-
     public boolean[] buttonList;
 
     private boolean midiSynthesizingStop = false;
-
     int previousNote;
-
-    private static Instrument[] instrumentList = new Instrument[] {
-            new Instrument("piano", 1, 40, 60),
-            new Instrument("guitar", 26, 45, 70),
-            new Instrument("trombone", 58, 55, 70),
-            new Instrument("trumpet", 57, 64, 80),
-            new Instrument("violin", 41, 50, 65),
-            new Instrument("saxophone", 66, 45, 60),
-            new Instrument("flute", 74, 60, 75)
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,19 +29,24 @@ public class MainActivity extends AppCompatActivity implements Observer {
         setContentView(R.layout.activity_main);
 
         midi = new MidiDriver();
+        //initialize the activeButton array to all false
         buttonList = new boolean[] {false, false, false};
-        Instrument trumpet = instrumentList[3];
+        //initialize the instrument to trumpet
+        Instrument trumpet = new Instrument("trumpet", 57, 64, 80);
 
+        //add a startingSequence instrument change to the MIDI stream in channel 0
         StartingSequence addStart = new StartingSequence(192, trumpet, 0);
 
+        //create a new thread playThread for the MIDI synthesis
         MidiParser mp = new MidiParser(addStart);
         playThread = new Thread(mp);
         playThread.start();
 
+        //initialize the first note to the middle C
         previousNote = 60;
 
+        //adds an Observer to the ObservableObject in this class
         ObservableObject.getInstance().addObserver(this);
-
     }
 
     @Override
@@ -64,16 +56,8 @@ public class MainActivity extends AppCompatActivity implements Observer {
         if (midi != null) {
             midi.start();
         }
-
-        //MidiParser mp = new MidiParser(sortedMidiSequenceArray);
-        //playThread = new Thread(mp);
-        //playThread.start();
-
     }
 
-    /**
-     *
-     */
     @Override
     public void onPause() {
         super.onPause();
@@ -83,8 +67,25 @@ public class MainActivity extends AppCompatActivity implements Observer {
         }
     }
 
+    /**
+     * Method called whenever a braodcast is recieved.
+     * @param broadcast - the broadcast message received
+     */
+    public void broadcastReceived(String broadcast){
+        updateButtonList(broadcast);
+        updateMidiSynthesis();
+    }
+
+
+    /**
+     * Method called from within the broadcastReceived. Receive the broadcasts on button presses
+     * and updates the list of currently pressed buttons.
+     * @param broadcast - the broadcast message received
+     */
     public void updateButtonList(String broadcast){
         Log.i("updateButtonList", MessageFormat.format("{0}", broadcast));
+
+        //switch statement updating the activeButton List
         switch (broadcast){
             case ("com.hillnerds.yellow.FINGER0_DOWN"):
                 buttonList[0] = true;
@@ -110,6 +111,17 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
         Log.i("updateButtonList", MessageFormat.format("Array: {0}, {1}, {2}", buttonList[0], buttonList[1], buttonList[2]));
 
+    }
+
+    /**
+     * Called whenever a broadcast received and state of activeButton is changed.
+     * Based on the combination of buttons pressed sends appropriate midiSequences to the MIDI
+     * stream.
+     */
+    public void updateMidiSynthesis(){
+        //TODO: make the button presses more realistic to how a real trumpet is played
+        //TODO: introduce the possibility of more scales.
+
         if (buttonList[0] == true && buttonList[1] == true && buttonList[2] == true ){
             sendMidi(144, 60, 60);
             sendMidi(144, previousNote, 0);
@@ -126,10 +138,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
             previousNote = 64;
         }
         else if (buttonList[0] == true && buttonList[1] == false && buttonList[2] == false){
-            //Note note = new Note(144, 66, 60, 0);
-            //MidiParser mp = new MidiParser(note);
-            //playThread   = new Thread(mp);
-            //playThread.start();
             sendMidi(144, 66, 60);
             sendMidi(144, previousNote, 0);
             previousNote = 66;
@@ -154,6 +162,11 @@ public class MainActivity extends AppCompatActivity implements Observer {
         }
     }
 
+    /**
+     * Sends a two byte array to the MIDI stream. Two byte sequences are Strating Seqences.
+     * @param m - the code sequence. Indicates the purpose of this particular MIDI sequence
+     * @param p - the instrument change code
+     */
     protected void sendMidi(int m, int p) {
         byte msg[] = new byte[2];
 
@@ -183,25 +196,18 @@ public class MainActivity extends AppCompatActivity implements Observer {
     }
 
     /**
-     * A safe sleep function including a try catch statement to capture exceptions.
-     * Created to avoid using try catch every time a Thread sleeps.
-     * Catches Exceptions: InterruptedException, occurs when a different process wants to interrupt
-     * this Thread
-     * @param time - a sleep time in miliseconds.
+     * Method called for this Observer of the ObservableObject whenever it is changed.
+     * @param o - the observable object
+     * @param arg - the data with which the object was updated with
      */
-    public void safeSleep(int time) {
-        try {
-            Thread.sleep(time);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
     @Override
     public void update(Observable o, Object arg) {
-        updateButtonList(((Intent) arg).getAction());
+        broadcastReceived(((Intent) arg).getAction());
     }
 
+    /**
+     * A class for MIDI synthesis happening in a separate thread.
+     */
     public class MidiParser implements Runnable {
         private MidiSequence midiSequence;
 
@@ -209,13 +215,15 @@ public class MainActivity extends AppCompatActivity implements Observer {
             this.midiSequence = midiSequence;
         }
 
-        public void run() {{
-                if (midiSequence instanceof StartingSequence) {
-                    sendMidi(midiSequence.startingCode, ((StartingSequence) midiSequence).instrument.instrumentMidiCode);
-                } else {
-                    sendMidi(midiSequence.startingCode, ((Note) midiSequence).pitch, ((Note) midiSequence).velocity);
+        /**
+         * Method called when the Thread MidiParser is started.
+         */
+        public void run() {
+            if (midiSequence instanceof StartingSequence) {
+                sendMidi(midiSequence.startingCode, ((StartingSequence) midiSequence).instrument.instrumentMidiCode);
+            } else {
+                sendMidi(midiSequence.startingCode, ((Note) midiSequence).pitch, ((Note) midiSequence).velocity);
 
-                }
             }
         }
     }

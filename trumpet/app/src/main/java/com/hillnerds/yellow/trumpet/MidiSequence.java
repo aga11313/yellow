@@ -3,6 +3,9 @@ package com.hillnerds.yellow.trumpet;
 /**
  * Created by aga on 11/02/17.
  */
+/**
+ * Super class for Note and StartingSequence classes.
+ */
 public class MidiSequence {
     int timestamp;
     int startingCode;

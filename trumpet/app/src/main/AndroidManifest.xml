@@ -18,7 +18,8 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".FingerReciever" android:exported="true">
+        <!-- The receiver listening for button press actions -->
+        <receiver android:name=".FingerReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="com.hillnerds.yellow.FINGER0_DOWN"/>
                 <action android:name="com.hillnerds.yellow.FINGER0_UP"/>
