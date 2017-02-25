@@ -1,9 +1,10 @@
 yellow.
 =======
+![The glove](glove_dev.jpg)
 
 A powered glove with an Android API. This was a hackathon project at StirHack 2017 by [Agnieszka Wasikowska](https://github.com/aga11313) and [Cameron MacLeod](https://github.com/notexactlyawe). The project consists of a rubber glove with buttons attached at the fingertips. Button presses are registered by a microbit strapped to the glove. Later they are broadcasted by Bluetooth and picked up by the phone.
 
-An android app will continously transmitt theese button presses which can be picked up by any app through Broadcasts.
+An android app will continously transmit these button presses which can be picked up by any app through Broadcasts.
 
 Project Structure
 -----------------
